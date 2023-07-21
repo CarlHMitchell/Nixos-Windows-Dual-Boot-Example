@@ -3,9 +3,9 @@
 
 { inputs, outputs, lib, config, pkgs, ... }: {
 
-  ##############################################################################
+  #############################################################################
   # Nix
-  ##############################################################################
+  #############################################################################
 
   # You can import other NixOS modules here
   imports = [
@@ -18,9 +18,6 @@
 
     # You can also split up your configuration and import pieces of it here:
     # ./users.nix
-
-    # Import your generated (nixos-generate-config) hardware configuration
-    ./hardware-configuration.nix
   ];
 
   nixpkgs = {
@@ -64,7 +61,20 @@
       auto-optimise-store = true;
     };
 
-    gc.automatic = true;
+    # NOTE: Nix garbage collection won't find roots in `/nix/var/nix/gcroots/auto/`
+    #  There's a good chance you want to keep some of those, but others may be stray.
+    #  See https://nixos.wiki/wiki/Storage_optimization
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 14d";
+    };
+
+    # Auto collect garbage to free up to 1GiB whenever there's less than 100MiB left
+    extraOptions = ''
+      min-free = ${toString (100 * 1024 * 1024)}
+      max-free = ${toString (1024 * 1024 * 1024)}
+    '';
   };
 
   system = {
@@ -80,7 +90,7 @@
       enable = true;
       flake = "/persist/etc/nixos/flake.nix";
       flags = [ "--update-input" "nixpkgs" ];
-      allowReboot = true;
+      allowReboot = true; # Reboot if the new generation would require it
     };
   };
 
@@ -88,27 +98,27 @@
   i18n = {
     defaultLocale = "en_US.UTF-8";
     extraLocaleSettings = {
-      LC_MESSAGES = "en_US.UTF-8";
-      LC_MEASUREMENT = "en_DK.UTF-8";
-      LC_TIME = "en_CA.UTF-8";
+      LC_MEASUREMENT = "en_DK.UTF-8"; # TODO: Remove if you don't want SI units even in US English.
+      LC_TIME = "en_CA.UTF-8"; # TODO: Remove if you don't want ISO-8601/RFC-3339 date strings. 
     };
   };
   console = {
     font = "Lat2-Terminus16";
-    keyMap = "colemak";
-    # useXkbConfig = true; # use xkbOptions in tty.
+    # The console keyMap sets the keyboard layout used to enter the filesystem passphrase!
+    keyMap = "us"; # TODO: Pick your keyboard layout for consoles.
+    # keyMap = "colemak";
   };
 
-  time.timeZone = "America/New_York";
-  services.chrony.enable = true;
+  # See the "TZ identifier columen at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time.timeZone = "Etc/UTC"; # TODO: Pick your time zone.
 
-
-  ##############################################################################
+  #############################################################################
   # Boot
-  ##############################################################################
+  #############################################################################
 
-  # Probably better in per-host config, but if all hosts use ZFS it'd just get
+  # This could go in per-host config, but if all hosts use ZFS it'd just get
   #  duplicated a lot.
+
   # Use EFI boot loader with Systemd-boot
   # https://nixos.org/manual/nixos/stable/index.html#sec-installation-partitioning-UEFI
   boot = {
@@ -116,9 +126,10 @@
     loader = {
       systemd-boot = {
         enable = true;
+        configurationLimit = 2; # TODO: You can set this higher if you have a larger /boot than the Windows default
       };
       efi = {
-        canTouchEfiVariables = true;  # must be disabled if efiInstallAsRemovable=true
+        canTouchEfiVariables = true;
         #efiSysMountPoint = "/boot/efi";  # using the default /boot for this config
       };
     };
@@ -131,15 +142,9 @@
     };
   };
 
-  ################################################################################
+  #############################################################################
   # ZFS
-  ################################################################################
-
-  # Set the disk’s scheduler to none. ZFS takes this step automatically
-  # if it controls the entire disk, but since it doesn't control the /boot
-  # partition we must set this explicitly.
-  # source: https://grahamc.com/blog/nixos-on-zfs
-  boot.kernelParams = [ "elevator=none" ];
+  #############################################################################
 
   boot.zfs = {
     requestEncryptionCredentials = true; # enable if using ZFS encryption, ZFS will prompt for password during boot
@@ -155,7 +160,6 @@
   #############################################################################
 
   networking = {
-    hostName = "nix-win-dual-test";  # Any arbitrary hostname.
     networkmanager.enable = true;
   };
 
@@ -163,15 +167,16 @@
   # Security
   #############################################################################
 
-  security.sudo.wheelNeedsPassword = false;
+  security.sudo.wheelNeedsPassword = false; # TODO: If you want to type a password for sudo, set this to true
 
-  ################################################################################
+  #############################################################################
   # Persisted Artifacts
-  ################################################################################
+  #############################################################################
 
   # Erase Your Darlings & Tmpfs as Root & Home:
-  # config/secrets/etc to be persisted across tmpfs reboots and rebuilds.  setup
+  # config/secrets/etc to be persisted across tmpfs reboots and rebuilds. Sets up
   # soft-links from /persist/<loc on root> to their expected location on /<loc on root>
+  # Further reading:
   # https://github.com/barrucadu/nixfiles/blob/master/README.markdown
   # https://github.com/barrucadu/nixfiles/blob/master/hosts/nyarlathotep/configuration.nix
   # https://grahamc.com/blog/erase-your-darlings
@@ -184,6 +189,8 @@
     directories = [
       "/etc/nixos"
       "/etc/NetworkManager/system-connections"
+      "/var/lib/chrony" # if using Chrony for NTP
+      "/var/lib/bluetooth"
     ];
     files = [
       "/etc/machine-id"
@@ -195,20 +202,8 @@
     ];
   };
 
-  #2. Wireguard:  requires /persist/etc/wireguard/
-  networking.wireguard.interfaces.wg0 = {
-    generatePrivateKeyFile = true;
-    privateKeyFile = "/persist/etc/wireguard/wg0";
-  };
-
-  #3. Bluetooth: requires /persist/var/lib/bluetooth
-  #4. ACME certificates: requires /persist/var/lib/acme
-  systemd.tmpfiles.rules = [
-    "L /var/lib/bluetooth - - - - /persist/var/lib/bluetooth"
-  ];
-
   ################################################################################
-  # GnuPG & SSH
+  # GnuPG, SSH, and Wireguard
   ################################################################################
 
   # Enable the OpenSSH daemon.
@@ -221,11 +216,11 @@
     hostKeys =
       [
         {
-          path = "/persist/etc/ssh/ssh_host_ed25519_key";
+          path = "/etc/ssh/ssh_host_ed25519_key";
           type = "ed25519";
         }
         {
-          path = "/persist/etc/ssh/ssh_host_rsa_key";
+          path = "/etc/ssh/ssh_host_rsa_key";
           type = "rsa";
           bits = 4096;
         }
@@ -238,13 +233,10 @@
     enableSSHSupport = true;
   };
 
-  ################################################################################
-  # Drivers
-  ################################################################################
-
-  hardware.opengl = {
-    driSupport = true;  # install and enable Vulkan: https://nixos.org/manual/nixos/unstable/index.html#sec-gpu-accel
-    #extraPackages = [ vaapiIntel libvdpau-va-gl vaapiVdpau intel-ocl ];  # only if using Intel graphics
+  # Wireguard: requires /persist/etc/wireguard/, handled by impermanence module
+  networking.wireguard.interfaces.wg0 = {
+    generatePrivateKeyFile = true;
+    privateKeyFile = "/etc/wireguard/wg0";
   };
 
   ################################################################################
@@ -259,7 +251,7 @@
     desktopManager.plasma5.enable = true;
     # Configure keymap in X11
     layout = "us";
-    xkbVariant = "colemak";
+    # xkbVariant = "colemak"; # If you want a "variant" layout, put it here
     xkbOptions = "caps:escape"; # map caps to escape.
     # Enable touchpad support (enabled default in most desktopManager).
     libinput.enable = true;
@@ -276,7 +268,7 @@
   # Sound
   ################################################################################
 
-  # Enable sound.
+  # Enable sound, with PipeWire & PulseAudio.
   sound.enable = true;
   services.pipewire = {
     enable = true;
@@ -290,35 +282,29 @@
   # When using a password file via users.users.<name>.passwordFile, put the
   # passwordFile in the specified location *before* rebooting, or you will be
   # locked out of the system.  To create this file, make a single file with only
-  # a password hash in it, compatible with `chpasswd -e`.  Or you can copy-paste
-  # your password hash from `/etc/shadow` if you first built the system with
-  # `password=`, `hashedPassword=`, initialPassword-, or initialHashedPassword=.
-  # `sudo cat /etc/shadow` will show all hashed user passwords.
+  # a password hash in it, by running `mkpasswd` and saving the output.
+  # Or you can copy-paste your password hash from `/etc/shadow` if you first built
+  # the system with `password=`, `hashedPassword=`, initialPassword-, or
+  # initialHashedPassword=. `sudo cat /etc/shadow` will show all hashed user passwords.
   # More info:  https://search.nixos.org/options?channel=21.05&show=users.users.%3Cname%3E.passwordFile&query=users.users.%3Cname%3E.passwordFile
 
   users = {
     mutableUsers = false;
-    defaultUserShell = "/var/run/current-system/sw/bin/zsh";
+    defaultUserShell = "/var/run/current-system/sw/bin/zsh"; # TODO: Pick a default user shell
     users = {
       root = {
-        # disable root login here, and also when installing nix by running nixos-install --no-root-passwd
+        # disable root login here, and also when installing nix by running `nixos-install --no-root-passwd`
         # https://discourse.nixos.org/t/how-to-disable-root-user-account-in-configuration-nix/13235/3
         hashedPassword = "!";  # disable root logins, nothing hashes to !
       };
-      test = {
+      USER = { # TODO: Set your username
         isNormalUser = true;
-        description = "Non-sudo account for testing new config options that could break login.  If need sudo for testing, add 'wheel' to extraGroups and rebuild.";
-        initialPassword = "password";
-        #passwordFile = "/persist/etc/users/test";
-        extraGroups = [ "networkmanager" ];
-        #openssh.authorizedKeys.keys = [ "${AUTHORIZED_SSH_KEY}" ];
-      };
-      carl = {
-        isNormalUser = true;
-        description = "Carl";
-        passwordFile = "/persist/etc/users/carl";
-        extraGroups = [ "wheel" "networkmanager" "audio" "dialout" "docker" "dumpcap" ];
-        #openssh.authorizedKeys.keys = [ "${AUTHORIZED_SSH_KEY}" ];
+        description = "USER DESCRIPTION"; # TODO: Set your user description 
+        home = "/home/USER"; # TODO: Set to your username. MUST match the `fileSystems."/home/USER" =` value.
+        createHome = true; # Does nothing, due to a bug. https://github.com/NixOS/nixpkgs/pull/223932 should resolve it. Harmless here.
+        passwordFile = "/persist/etc/users/USER"; # TODO: Set your username. Be sure to create this *before* rebooting during first install!
+        extraGroups = [ "wheel" "networkmanager" "audio" "dialout" ]; # TODO: add any extra groups, e.g. "docker" for Docker or "dumpcap" for Wireshark
+        #openssh.authorizedKeys.keys = [ "${AUTHORIZED_SSH_KEY}" ]; # TODO: Add keys that can log into *this* user account from _other_ computers.
       };
     };
   };
@@ -329,52 +315,74 @@
 
   # List packages installed in system profile. To search, run:
   # $ nix search <packagename>
+  # Or better yet use search.nixos.org
+  # TODO: Edit this list to your liking
   environment.systemPackages = with pkgs; [
-
-    # system core (useful for a minimal first install)
-    nix-index
-    efibootmgr
-    parted gparted gptfdisk
-    pciutils uutils-coreutils wget
-    openssh ssh-copy-id ssh-import-id fail2ban sshguard
-    git git-extras git-lfs
-    zsh oh-my-zsh
-    firefox irssi
-    screen tmux
-    vim nano
-    htop ncdu
-    qdirstat
-    ark
-    keepassxc libsecret
-    qdirstat
-    starship
-    plasma-pa
+    # Useful mostly-minimal package set for a first install:
+    nix-index # Nix package lookup
+    efibootmgr # EFI management
+    parted gparted gptfdisk # Disk partitioning
+    pciutils uutils-coreutils wget rsync # Commonly-needed utilities
+    openssh ssh-copy-id ssh-import-id fail2ban sshguard # SSH & helpers
+    git git-extras git-lfs # Git version control
+    zsh oh-my-zsh # Z Shell
+    firefox irssi # Browser & IRC
+    screen tmux zellij # Terminal multiplexers
+    vim nano emacs # Commonly-used text editors
+    htop ncdu qdirstat # System usage monitoring
+    keepassxc libsecret # Password management
+    starship # Pretty terminal prompt
+    plasma-pa # Pulseaudio control in KDE Plasma
+    # st-link # Used as an example for a custom udev rule below.
   ];
 
   ################################################################################
   # Program Config
   ################################################################################
 
+  # TODO: Customize to your liking. This is for ALL users.
   programs.zsh = {
     enable = true;
     ohMyZsh = {
       enable = true;
-      plugins = [ "colored-man-pages" "colorize" "command-not-found" "emacs" "git" "git-extras" "history" "man" "rsync" "safe-paste" "scd" "screen" "systemd" "tmux" "urltools" "vi-mode" "z" "zsh-interactive-cd" ];
-      theme = "juanghurtado";
-      #theme = "jonathan";
-      # themes displaying commit hash: jonathan juanghurtado peepcode simonoff smt sunrise sunaku theunraveler
-      # cool themes: linuxonly agnoster blinks crcandy crunch essembeh flazz frisk gozilla itchy gallois eastwood dst clean bureau bira avit nanotech nicoulaj rkj-repos ys darkblood fox
+      plugins = [
+        "colored-man-pages"
+        "colorize"
+        "command-not-found"
+        "emacs"
+        "git"
+        "git-extras"
+        "history"
+        "man"
+        "rsync"
+        "safe-paste"
+        "scd"
+        "screen"
+        "systemd"
+        "tmux"
+        "urltools"
+        "vi-mode"
+        "z"
+        "zsh-interactive-cd"
+      ];
     };
   };
+
+  programs.fish.enable = true;
 
   programs.kdeconnect.enable = true;
   
   programs.fuse.userAllowOther = true;
 
+  programs.dconf.enable = true; # Required for some GNOME programs to work.
+
   ################################################################################
   # Other Services Config
   ################################################################################
 
+  services.chrony.enable = true;
+
+  # TODO: Customize these sizes for how much journal output to store
   services.journald.extraConfig = ''
     SystemMaxUse=1G
     SystemKeepFree=1G
@@ -382,16 +390,17 @@
 
   services.syncthing = {
     enable = true;
-    dataDir = "/home/persist/carl/Sync";
+    dataDir = "/home/persist/USER/Sync"; # TODO: Set to your user
     openDefaultPorts = true;
-    configDir = "/home/persist/carl/.config/syncthing";
-    user = "carl";
+    configDir = "/home/persist/USER/.config/syncthing"; # TODO: Set to your user
+    user = "USER"; # TODO: Set to your user
     group = "users";
     guiAddress = "127.0.0.1:8384";
   };
 
-  services.udev.packages = [ pkgs.stlink ];
-  services.udev.extraRules = ''
-    ACTION=="add", ATTRS{idVendor}=="0a01", ATTRS{idProduct}=="0005", ATTR{power/wakeup}="enabled"
-  '';
+  # Example of adding a udev rule
+  # services.udev.packages = [ pkgs.stlink ];
+  # services.udev.extraRules = ''
+  #   ACTION=="add", ATTRS{idVendor}=="0a01", ATTRS{idProduct}=="0005", ATTR{power/wakeup}="enabled"
+  # '';
 }

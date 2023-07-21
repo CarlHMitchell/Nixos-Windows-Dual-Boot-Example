@@ -35,7 +35,7 @@
   outputs = { self, nixpkgs, home-manager, plasma-manager, nix-ld, impermanence, ... }@inputs:
     let
       inherit (self) outputs;
-      forAllSystems = nixpkgs.lib.genAttrs [
+      forAllSystems = nixpkgs.lib.genAttrs [ # TODO: select systems you have hosts for here
         # "aarch64-linux"
         # "i686-linux"
         "x86_64-linux"
@@ -69,13 +69,14 @@
       # NixOS configuration entrypoint
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
-        nix-win-dual-test = nixpkgs.lib.nixosSystem {
+        nix-win-dual-example = nixpkgs.lib.nixosSystem { # TODO: Set your host name instead of nix-win-dual-example
           system = "x86_64-linux";
           specialArgs = { inherit inputs outputs; };
           modules = [
             # > Our main nixos configuration file <
             ./nixos/configuration.nix
-            ./nixos/hosts/nix-win-dual-test/default.nix
+            # This device's host-specific configuration file
+            ./nixos/hosts/nix-win-dual-example/default.nix
             nix-ld.nixosModules.nix-ld
             impermanence.nixosModules.impermanence
             home-manager.nixosModules.home-manager

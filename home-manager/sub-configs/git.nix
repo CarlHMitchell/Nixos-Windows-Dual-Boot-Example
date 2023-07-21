@@ -2,11 +2,12 @@
 {
   programs.git = {
     enable = true;
-    userName = "Carl Mitchell";
-    userEmail = "carl.mitchell@gomotive.com";
-    signing.key = "113CCD2515E94ACBF1EE6760B689787BCAB5EF29";
+    userName = "NAME"; # TODO: Add your name
+    userEmail = "EMAIL"; # TODO: Add your email
+    signing.key = "KEY ID HERE"; # TODO: Add your GPG Key ID here
     signing.signByDefault = true;
     aliases = {
+      # Mostly from [Humane Git Aliases](https://gggritso.com/human-git-aliases). 
       unstage = "reset -q HEAD --";
       discard = "checkout --";
       nevermind = "!f() { git reset --hard HEAD^ && git clean -d -f; }; f";
@@ -37,12 +38,9 @@
       force-pull-main = "!f() { git fetch && git reset --hard origin/main; }; f";
       sha = "rev-parse HEAD";
       ssha = "rev-parse --short HEAD";
-      precommit = "!f() { git diff --cached --diff-algorithm=minimal -w; }; f";
-      fpm = "!f() { git checkout master && git fetch && git pull --ff-only; }; f";
-      fp = "!f() { git fetch && git pull --ff-only; }; f";
-      prune-branches = ''!f() { git fetch -p && git checkout -q master && git for-each-ref refs/heads/ "--format=%(refname:short)" | while read branch; do mergeBase=$(git merge-base master $branch) && [[ $(git cherry master $(git commit-tree $(git rev-parse "$branch^{tree}") -p $mergeBase -m _)) == "-"* ]] && git branch -D $branch; done }; f'';
+      diff-staged = "!f() { git diff --cached --diff-algorithm=minimal -w; }; f";
     };
-    difftastic = {
+    difftastic = { # TODO: Remove this if you're not installing difftastic
       enable = true;
       background = "dark";
     };
@@ -57,6 +55,7 @@
     };
     lfs.enable = true;
     ignores = [
+      # TODO: Add or remove global .gitignore entries here
       # OS generated files
       ".DS_Store"
       ".DS_Store?"

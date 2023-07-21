@@ -3,9 +3,8 @@
   programs.fish = {
     enable = true;
     interactiveShellInit = ''
-      direnv hook fish | source
-      starship init fish | source
-      set -x KTMR_DIRENV_SKIP_NIX_VERSION_CHECK "iknowwhatimdoing"
+      direnv hook fish | source # TODO: Remove line if you removed `direnv` from your programs
+      starship init fish | source # TODO: Remove line if you removed `starship` from your programs.
     '';
     plugins = [
       # Oh-my-fish plugins are stored in their own repos, which makes them easy to import
@@ -19,6 +18,7 @@
       }
     ];
     functions = {
+      # TODO: Change these if you don't have exa
       ls = {
         body = "exa --color=auto --group-directories-first --classify $argv";
       };
@@ -28,14 +28,11 @@
       ll = {
         body = "exa --color=auto --group-directories-first --classify --all --long --header --group $argv";
       };
-      aws_id = {
-        body = "openssl x509 -in $argv -outform DER | sha256sum";
-      };
-      # Deep Fuzzy Change Directory.
+      # Deep Fuzzy Change Directory. TODO: Remove if you don't have broot
       dfcd = {
         body = "br --only-folders --cmd  \"cd $argv\"";
       };
-      fuck = {
+      fuck = { # TODO: Remove if you don't have `thefuck`
         # https://github.com/nvbn/thefuck
         body = "eval (thefuck (history | head -n1))";
       };
@@ -45,44 +42,12 @@
       mkcd = {
         body = "mkdir -p $argv && cd $argv";
       };
-      space = {
-        body = ''
-          btrfs fi df $argv[1]
-          sudo btrfs fi usage $argv[1]
-        '';
-      };
       generations = {
         body = ''
           echo "boot generations" &&
           sudo nix-env -p /nix/var/nix/profiles/system/ --list-generations &&
           echo "system generations" &&
-          nix-env --list-generations &&
-          echo "home-manager generations" &&
-          home-manager generations
-        '';
-      };
-      sysupgrade = {
-        body = ''
-          sudo nixos-rebuild boot &&
-          sudo nixos-rebuild switch &&
-          home-manager switch &&
-          generations &&
-          space /
-        '';
-      };
-      btrfsbalance = {
-        body = ''
-          for i in 0 5 10 15 20 25 30 40 50 60 70 80 90 100
-            echo "btrfs balance: Running with $i% on $argv[1]"
-            sudo btrfs balance start -dusage=$i -musage=$i $argv[1]
-          end
-        '';
-      };
-      spacesaver = {
-        body = ''
-          sudo nix-collect-garbage -d
-          btrfsbalance /
-          docker system prune --all
+          nix-env --list-generations
         '';
       };
       gitgc = {
@@ -92,7 +57,7 @@
           git gc
         '';
       };
-      calc = {
+      calc = { # TODO: Remove if you don't have orpie
         body = ''
           orpie
         '';

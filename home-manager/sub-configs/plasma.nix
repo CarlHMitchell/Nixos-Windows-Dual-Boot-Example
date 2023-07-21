@@ -1,4 +1,5 @@
 # https://github.com/pjones/plasma-manager/
+# TODO: Customize Plasma to your liking.
 # To get the config after making GUI changes, `nix run github:pjones/plasma-manager`
 
 { config, lib, pkgs, plasma-manager, ... }:
@@ -902,19 +903,6 @@
       "kwinrc"."Script-bismuth"."keepFloatAbove" = false;
       "kwinrc"."Script-bismuth"."monocleMaximize" = false;
       "kwinrc"."Tiling"."padding" = 4;
-      "kwinrc"."Tiling.12039571-9e9b-5df8-8882-3414c0f40eb0"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.1237bd4e-470f-5e67-a1cf-ea18e186beb4"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.1fecc0b8-69fd-5abc-9e49-a83c895f84e1"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.213a9620-187e-58a6-b80b-85d8fb95dfce"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.23217716-59ec-5120-9da5-a054ff23237f"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.288c1323-146c-5b91-aedb-28e6a1f44335"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.37bb9a2a-1a3c-5d70-a8a1-a1b646d1a364"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.3e34a5f9-d669-5059-b45b-c9aa4f727a6b"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.4ab09e28-d25f-5fe9-b3c5-90d7631283a7"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.53d35ef4-9b9e-5bcf-a909-f781022bf6d0"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.5b7a5ba4-43cc-5910-8e98-f358f9d54b43"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.6e9b316a-0014-5ee4-b775-354e103f5a7b"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
-      "kwinrc"."Tiling.ea674178-f322-5ecf-b0bd-e548a306adaa"."tiles" = "{\"layoutDirection\":\"horizontal\",\"tiles\":[{\"width\":0.25},{\"width\":0.5},{\"width\":0.25}]}";
       "kwinrc"."Xwayland"."Scale" = 1;
       "kwinrc"."org.kde.kdecoration2"."ButtonsOnLeft" = "MFS";
       "kxkbrc"."Layout"."DisplayNames" = "";
@@ -925,10 +913,10 @@
       "kxkbrc"."Layout"."ResetOldOptions" = true;
       "kxkbrc"."Layout"."SwitchMode" = "Global";
       "kxkbrc"."Layout"."Use" = true;
-      "kxkbrc"."Layout"."VariantList" = "colemak";
+      # "kxkbrc"."Layout"."VariantList" = "colemak"; # TODO: Uncomment for Colemak
       "plasma-localerc"."Formats"."LANG" = "en_US.UTF-8";
-      "plasma-localerc"."Formats"."LC_MEASUREMENT" = "en_DK.UTF-8";
-      "plasma-localerc"."Formats"."LC_TIME" = "en_CA.UTF-8";
+      "plasma-localerc"."Formats"."LC_MEASUREMENT" = "en_DK.UTF-8"; # TODO: Change/remove if you don't want SI units
+      "plasma-localerc"."Formats"."LC_TIME" = "en_CA.UTF-8"; # TODO: Change/remove if you don't want RFC-3339/ISO-8601 time format
     };
   };
 }

@@ -6,11 +6,9 @@
     enableCompletion = true;
 
     initExtra = ''
-      eval "$(starship init zsh)"
-      eval "$(direnv hook zsh)"
-      eval "$(thefuck --alias)"
-      export KTMR_DIRENV_SKIP_NIX_VERSION_CHECK="iknowwhatimdoing"
-      eval "$(/home/carl/nixfiles/home/bin/load-ktmr.sh)"
+      eval "$(starship init zsh)" # TODO: Remove line if you removed `starship` from your programs.
+      eval "$(direnv hook zsh)" # TODO: Remove line if you removed `direnv` from your programs
+      eval "$(thefuck --alias)" # TODO: Remove line if you removed `thefuck` from your programs
       ## Keybindings section
       bindkey -e
       bindkey '^[[7~' beginning-of-line                               # Home key
@@ -38,9 +36,34 @@
     '';
 
     shellAliases = rec {
-      ls = "exa --color=auto --group-directories-first --classify";
+      ls = "exa --color=auto --group-directories-first --classify"; # TODO: change this if you removed `exa` from your programs
       la = "${ls} --all";
       ll = "${ls} --all --long --header --group";
     };
+
+    ohMyZsh = {
+      enable = true;
+      # TODO: Customize your plugins, themes, etc.
+      plugins = [
+        "colored-man-pages"
+        "colorize"
+        "command-not-found"
+        "emacs"
+        "git"
+        "git-extras"
+        "history"
+        "man"
+        "rsync"
+        "safe-paste"
+        "scd"
+        "screen"
+        "systemd"
+        "tmux"
+        "urltools"
+        "vi-mode"
+        "z"
+        "zsh-interactive-cd"
+      ];
+    }
   };
 }

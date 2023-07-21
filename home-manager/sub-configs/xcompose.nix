@@ -15,7 +15,6 @@
       # <Multi_key> <h> <n> <k> : "hugs and kisses" # Compose h n k
 
       <Multi_key> <o> <h> <m> : "Ω" U2126 # Compose o h m
-      <Multi_key> <m> <m> : "ᴍotive" # Approximate "Motive" company name/logo.
       # Greek
       <Multi_key> <A> <l> <p> <h> <a> : "Α" U0391
       <Multi_key> <a> <l> <p> <h> <a> : "α" U03B1
