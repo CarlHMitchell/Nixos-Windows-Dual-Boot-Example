@@ -82,7 +82,7 @@
             home-manager.nixosModules.home-manager
             {
               home-manager.extraSpecialArgs = { inherit inputs; }; # Pass flake input to home-manager
-              home-manager.users.carl.imports = [ ./home-manager/home.nix ];
+              home-manager.users.USER.imports = [ ./home-manager/home.nix ]; # TODO: Set your user here
               home-manager.sharedModules = [ plasma-manager.homeManagerModules.plasma-manager ];
             }
           ];
