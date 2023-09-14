@@ -91,7 +91,7 @@ zpool create -f	-m none	-R /mnt \
     -O xattr=sa                 \
     -O normalization=formD      \
     -O secondarycachne=none     \
-    rpool $ZFS
+    rpool "${ZFS:?}"
 ```
 
 Make ZFS datasets for /nix, /persist, and /home/persist. Datasets under `/rpool/safe` should be backed up,
@@ -121,7 +121,10 @@ mkdir -p /mnt/{nix,home,persist,boot}
 
 Replace `USER` with your username in the following:
 
-`mount -t tmpfs tmpfs /mnt/home/USER`
+```
+mkdir -p /mnt/home/USER
+mount -t tmpfs tmpfs /mnt/home/USER
+```
 
 ```
 mkdir -p /mnt/home/persist
@@ -136,6 +139,8 @@ Make persistent subdirectories:
 ```
 mkdir -p /mnt/persist/etc/{ssh,users,nixos,wireguard,NetworkManager/system-connections}
 mkdir -p /mnt/persist/var/{log,lib/bluetooth}
+mkdir -p /mnt/etc/nixos
+mkdir -p /mnt/var/log
 ```
 
 Bind mount the /etc/nixos and /var/log directories:
@@ -181,6 +186,6 @@ Unmount `/mnt`:
 
 Export the ZFS pool (THIS IS MANDATORY, FAILURE TO EXPORT WILL PREVENT BOOT):
 
-`zfs export rpool`
+`zpool export rpool`
 
 Reboot into your new system!

@@ -41,7 +41,7 @@
   fileSystems."/home/USER" = # TODO: Set your username here. Must match the users.users value.
     { device = "tmpfs";
       fsType = "tmpfs";
-      options = [ "defaults" "size=12G" "mode=700" ]; # TODO: Set the size based on how much space you want ephemeral data to take.
+      options = [ "defaults" "size=12G" "mode=700" "uid=1000" "gid=100" "user" ]; # TODO: Set the size based on how much space you want ephemeral data to take.
     };
 
   fileSystems."/home/persist" =
@@ -59,6 +59,7 @@
     { device = "/persist/etc/nixos";
       fsType = "none";
       options = [ "bind" ];
+      depends = [ "/persist" ];
       neededForBoot = true;
     };
 
@@ -66,6 +67,7 @@
     { device = "/persist/var/log";
       fsType = "none";
       options = [ "bind" ];
+      depends = [ "/persist" ];
       neededForBoot = true;
     };
 

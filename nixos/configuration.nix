@@ -230,6 +230,7 @@
   # Enable GnuPG Agent
   programs.gnupg.agent = {
     enable = true;
+    pinentryFlavor = "curses";
     enableSSHSupport = true;
   };
 
@@ -303,7 +304,7 @@
         home = "/home/USER"; # TODO: Set to your username. MUST match the `fileSystems."/home/USER" =` value.
         createHome = true; # Does nothing, due to a bug. https://github.com/NixOS/nixpkgs/pull/223932 should resolve it. Harmless here.
         passwordFile = "/persist/etc/users/USER"; # TODO: Set your username. Be sure to create this *before* rebooting during first install!
-        extraGroups = [ "wheel" "networkmanager" "audio" "dialout" ]; # TODO: add any extra groups, e.g. "docker" for Docker or "dumpcap" for Wireshark
+        extraGroups = [ "wheel" "networkmanager" "audio" "dialout" "dumpcap" ]; # TODO: add any extra groups, e.g. "docker" for Docker or "dumpcap" for Wireshark
         #openssh.authorizedKeys.keys = [ "${AUTHORIZED_SSH_KEY}" ]; # TODO: Add keys that can log into *this* user account from _other_ computers.
       };
     };

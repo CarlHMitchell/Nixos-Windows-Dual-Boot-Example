@@ -121,6 +121,7 @@
       zsh-autosuggestions
       zsh-syntax-highlighting
       zsh-history-substring-search
+      oh-my-zsh
       nix-zsh-completions
       # cod # Tool for generating Bash/Fish/Zsh autocompletions based on `--help` output, broken
       jq # JSON CLI editor
@@ -132,6 +133,7 @@
       nixpkgs-fmt # Format Nix files
       wl-clipboard # Needed for zellilj option `copy_command = "wl-copy";` which is needed for clipboard to work on Wayland
     ];
+  };
 
   xdg = {
     enable = true;

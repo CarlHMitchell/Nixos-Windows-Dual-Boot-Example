@@ -41,29 +41,5 @@
       ll = "${ls} --all --long --header --group";
     };
 
-    ohMyZsh = {
-      enable = true;
-      # TODO: Customize your plugins, themes, etc.
-      plugins = [
-        "colored-man-pages"
-        "colorize"
-        "command-not-found"
-        "emacs"
-        "git"
-        "git-extras"
-        "history"
-        "man"
-        "rsync"
-        "safe-paste"
-        "scd"
-        "screen"
-        "systemd"
-        "tmux"
-        "urltools"
-        "vi-mode"
-        "z"
-        "zsh-interactive-cd"
-      ];
-    }
   };
 }
