@@ -131,7 +131,7 @@ mkdir -p /mnt/home/persist
 mount -t zfs rpool/local/nix /mnt/nix
 mount -t zfs rpool/safe/home /mnt/home/persist
 mount -t zfs rpool/safe/persist /mnt/persist
-mount -t vfat "${BOOT:?} /mnt/boot
+mount -t vfat "${BOOT:?}" /mnt/boot
 ```
 
 Make persistent subdirectories:
